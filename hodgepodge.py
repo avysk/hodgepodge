@@ -78,6 +78,7 @@ def main(size, zoom):
     while True:
         evt = pg.event.poll()
         if evt.type == lcls.QUIT:
+            pg.image.save(screen, "out.png")
             raise SystemExit()
         _update(sick, infected, colors)
 
