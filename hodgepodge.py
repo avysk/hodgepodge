@@ -10,11 +10,13 @@ import pygame.locals as lcls
 
 from pygame import surfarray as sf
 
-SIZE = 250
+SIZE = 200
 ZOOM = 1000 // SIZE
+HILL = 30
 
 
 SICK_LEVELS = 100
+MAX_INITIAL_SICK = 2
 COLORS = {lvl: 255 * np.array(colorsys.hsv_to_rgb(lvl / (SICK_LEVELS + 2),
                                                   1., 1.))
           for lvl in range(1, SICK_LEVELS + 1)}
@@ -63,12 +65,21 @@ def _update(sick, infected, colors):
     colors[sick > 0] = (0., 0., 0.)
 
 
-def main(size, zoom):
+def main(size, hill, zoom, max_initial_sick):
     """Entry point."""
     # pylint:disable=no-member
     pg.init()
 
-    infected = np.floor(np.random.rand(size, size) * SICK_LEVELS)
+    infected = np.floor(np.random.rand(size, size) * max_initial_sick)
+    hsize = size // 2
+    hhill = hill // 2
+    hmin = hsize - hhill
+    hmax = hsize + hhill
+    infected[:hmin, :] = 0
+    infected[hmax:, :] = 0
+    infected[:, :hmin] = 0
+    infected[:, hmax:] = 0
+
     sick = np.zeros_like(infected)
     colors = np.zeros((size, size, 3), dtype=float)
 
@@ -89,4 +100,4 @@ def main(size, zoom):
 
 
 if __name__ == '__main__':
-    main(SIZE, ZOOM)
+    main(SIZE, HILL, ZOOM, MAX_INITIAL_SICK)
