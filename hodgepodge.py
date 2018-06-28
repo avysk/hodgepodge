@@ -10,9 +10,9 @@ import pygame.locals as lcls
 
 from pygame import surfarray as sf
 
-SIZE = 200
+SIZE = 300
 ZOOM = 1000 // SIZE
-HILL = 30
+HILL = 50
 
 
 SICK_LEVELS = 100
@@ -23,7 +23,8 @@ COLORS = {lvl: 255 * np.array(colorsys.hsv_to_rgb(lvl / (SICK_LEVELS + 2),
 
 K1 = 2.
 K2 = 3.
-RATE = 10
+RATE = 20
+LAMBDA = 1.
 
 
 def _sum(src):
@@ -47,22 +48,25 @@ def _update(sick, infected, colors):
     infected_sum = _sum(infected)
     sick_near = _sum(sick)
 
-    infected_near = _sum((infected != 0) * 1.0)
     # Infected cells progress towards sickness
-    infected_near[infected_near == 0] = 1
+    infected_near = _sum((infected != 0) * 1.0)
+    infected_near[infected_near == 0] = 1  # avoid dvision by zero
     infected += (infected > 0) * \
-        (RATE + np.floor(infected_sum / infected_near))
+        (RATE + np.floor(LAMBDA * infected_sum / infected_near))
+
     # Healthy cells may become infected
     healthy = (infected == 0) & (sick == 0)
     infected += healthy * np.floor(infected_near / K1 + sick_near / K2)
+
     # ...and some become sick (old sick are healthy now)
-    sick = (infected > SICK_LEVELS) * 1.0
+    sick[:] = (infected > SICK_LEVELS) * 1.0
     infected[infected > SICK_LEVELS] = 0.0
 
     colors.fill(255.)
     for lvl in range(1, SICK_LEVELS + 1):
         colors[infected == lvl] = COLORS[lvl]
     colors[sick > 0] = (0., 0., 0.)
+    colors[(sick == 0) & (infected == 0)] = (255., 255., 255.)
 
 
 def main(size, hill, zoom, max_initial_sick):
@@ -94,8 +98,7 @@ def main(size, hill, zoom, max_initial_sick):
         _update(sick, infected, colors)
 
         sf.blit_array(surface, colors)
-        pg.transform.smoothscale(surface,
-                                 (size * zoom, size * zoom), screen)
+        pg.transform.smoothscale(surface, (size * zoom, size * zoom), screen)
         pg.display.flip()
 
 
