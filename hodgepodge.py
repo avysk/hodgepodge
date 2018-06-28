@@ -10,6 +10,8 @@ import pygame.locals as lcls
 
 from pygame import surfarray as sf
 
+import grid
+
 SIZE = 300
 ZOOM = 1000 // SIZE
 HILL = 50
@@ -27,29 +29,16 @@ RATE = 20
 LAMBDA = 1.
 
 
-def _sum(src):
-    dst = np.zeros_like(src)
-    dst[1:, :] += src[:-1, :]
-    dst[:-1, :] += src[1:, :]
-    dst[:, 1:] += src[:, :-1]
-    dst[:, :-1] += src[:, 1:]
-    dst[1:, 1:] += src[:-1, :-1]
-    dst[1:, :-1] += src[:-1, 1:]
-    dst[:-1, 1:] += src[1:, :-1]
-    dst[:-1, :-1] += src[1:, 1:]
-    return dst
-
-
 def _update(sick, infected, colors):
     """
     sick are sick cells
     infected are infected cells
     """
-    infected_sum = _sum(infected)
-    sick_near = _sum(sick)
+    infected_sum = grid.sum_8(infected)
+    sick_near = grid.sum_8(sick)
 
     # Infected cells progress towards sickness
-    infected_near = _sum((infected != 0) * 1.0)
+    infected_near = grid.nonzero_8(infected)
     infected_near[infected_near == 0] = 1  # avoid dvision by zero
     infected += (infected > 0) * \
         (RATE + np.floor(LAMBDA * infected_sum / infected_near))
@@ -62,11 +51,9 @@ def _update(sick, infected, colors):
     sick[:] = (infected > SICK_LEVELS) * 1.0
     infected[infected > SICK_LEVELS] = 0.0
 
-    colors.fill(255.)
-    for lvl in range(1, SICK_LEVELS + 1):
-        colors[infected == lvl] = COLORS[lvl]
+    grid.color_with(infected, colors, (255., 255., 255.), COLORS)
+
     colors[sick > 0] = (0., 0., 0.)
-    colors[(sick == 0) & (infected == 0)] = (255., 255., 255.)
 
 
 def main(size, hill, zoom, max_initial_sick):
