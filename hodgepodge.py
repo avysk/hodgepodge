@@ -98,7 +98,7 @@ def _parse(args):
                         type=int, default=30)
     parser.add_argument("-l", "--levels",
                         help="the number of possible infection levels [100]",
-                        default=100)
+                        type=int, default=100)
     parser.add_argument("-m", "--maxlevel",
                         help="the maximum infection level of "
                              "initial random seed [20]",
