@@ -57,7 +57,7 @@ def main(opt):
     # pylint:disable=too-many-function-args
     surface = pg.Surface((size, size))
 
-    maxlevel = min(opt.levels, opt.maxlevel)
+    maxlevel = 1 + min(opt.levels, opt.maxlevel)
     infected = np.floor(np.random.rand(size, size) * maxlevel)
     hsize = size // 2
     hhill = opt.hill // 2
