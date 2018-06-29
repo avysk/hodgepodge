@@ -57,7 +57,8 @@ def main(opt):
     # pylint:disable=too-many-function-args
     surface = pg.Surface((size, size))
 
-    infected = np.floor(np.random.rand(size, size) * opt.maxlevel)
+    maxlevel = min(opt.levels, opt.maxlevel)
+    infected = np.floor(np.random.rand(size, size) * maxlevel)
     hsize = size // 2
     hhill = opt.hill // 2
     hmin = hsize - hhill
@@ -102,7 +103,7 @@ def _parse(args):
     parser.add_argument("-m", "--maxlevel",
                         help="the maximum infection level of "
                              "initial random seed [20]",
-                        default=20)
+                        type=int, default=20)
     parser.add_argument("--kfirst", help="Hodgepodge K1 [2]",
                         type=int, default=2)
     parser.add_argument("--ksecond", help="Hodgepodge K2 [3]",
